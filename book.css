@@ -110,7 +110,11 @@ button { font: inherit; color: inherit; }
 .fine { margin: 0; font-size: .8rem; color: var(--frost-dim); }
 
 /* the password form of the protected build (tools/build-locked.py, lock.js) */
-.lock { display: grid; gap: .55rem; margin-top: .8rem; max-width: 24rem; }
+/* its own width, not whatever the cover's words happen to leave: that ran it from edge
+   to edge on some phones and squeezed it on others */
+.lock { display: grid; grid-template-columns: minmax(0, 1fr); gap: .55rem; margin-top: .8rem; width: min(100%, 21rem); }
+/* minmax(0, …): an input's natural width (about 20 characters) otherwise widens the
+   column past the form, and the button sticks out on a narrow phone */
 .lock label { font: 400 .72rem/1 var(--f-mono); letter-spacing: .3em; color: var(--frost-dim); }
 .lock-row { display: flex; gap: .6rem; }
 .lock input {
@@ -449,6 +453,7 @@ button { font: inherit; color: inherit; }
   .cover-copy { justify-items: center; }
   .span-years { justify-content: center; }
   .cover-actions { justify-content: center; flex-direction: column; }
+  .lock { width: min(100% - 2.5rem, 19rem); justify-self: center; }
   .book-name { display: none; }
   .tools { flex: 0 0 auto; }
   .folio { flex: 1 1 0; }

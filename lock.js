@@ -69,6 +69,10 @@
   }
 
   function opened(run) {
+    // iOS can leave the page scrolled where the keyboard pushed it; put it back before
+    // the book appears, or the book opens shifted
+    input.blur();
+    window.scrollTo(0, 0);
     form.hidden = true;
     document.querySelectorAll('[data-locked]').forEach((e) => { e.hidden = false; });
     run();                                // book.js wires up OPEN, or opens a #link itself
