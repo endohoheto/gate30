@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iceman GATE 30th</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Iceman デビュー30周年記念ファンブック『Iceman happy anniversary ‘GATE 30th’』のデジタル版。寄稿された原画を、ページをめくりながら見られます。">
+<!-- A fan book of 20 people's work. Kept out of search until the contributors have
+     agreed to it being findable; the link still works for anyone it is shared with. -->
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#060a12">
+<!-- The share card. Scrapers (X, LINE, Discord, Slack…) need absolute URLs, and they
+     can only fetch it once the site is live at this address. -->
+<link rel="canonical" href="https://endohoheto.github.io/gate30/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Iceman GATE 30th">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:url" content="https://endohoheto.github.io/gate30/">
+<meta property="og:title" content="Iceman happy anniversary ‘GATE 30th’ デジタル版">
+<meta property="og:description" content="Iceman デビュー30周年記念ファンブック。21人の絵・漫画・写真・文章・セトリを、めくれるWebの本で。">
+<meta property="og:image" content="https://endohoheto.github.io/gate30/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="表紙: ICEMAN 1996–2026 happy anniversary ‘GATE 30th’">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Iceman happy anniversary ‘GATE 30th’ デジタル版">
+<meta name="twitter:description" content="Iceman デビュー30周年記念ファンブック。21人の絵・漫画・写真・文章・セトリを、めくれるWebの本で。">
+<meta name="twitter:image" content="https://endohoheto.github.io/gate30/og.jpg">
+<meta name="twitter:image:alt" content="表紙: ICEMAN 1996–2026 happy anniversary ‘GATE 30th’">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&family=Shippori+Mincho:wght@400;600&display=swap">
+<link rel="stylesheet" href="book.css">
+<link rel="preload" as="image" href="img/cover.webp">
+</head>
+<body>
+<canvas id="frost" aria-hidden="true"></canvas>
+
+<section id="cover-screen" aria-labelledby="cover-title">
+  <div class="cover-art">
+    <img src="img/cover.webp" alt="表紙: ICEMAN 1996–2026 happy anniversary ‘GATE 30th’" width="1070" height="1500">
+    <span class="cover-glint" aria-hidden="true"></span>
+  </div>
+  <div class="cover-copy">
+    <p class="eyebrow">Iceman happy anniversary</p>
+    <h1 id="cover-title">‘GATE 30th’</h1>
+    <p class="span-years"><span>1996</span><span class="dash" aria-hidden="true"></span><span>2026</span></p>
+    <p class="lede">Iceman デビュー30周年記念ファンブック<br>21人の寄稿を、原画の解像度で</p>
+    <form id="lock" class="lock">
+      <label for="lock-pw">PASSWORD</label>
+      <div class="lock-row">
+        <input id="lock-pw" type="password" autocomplete="current-password" enterkeyhint="go" aria-describedby="lock-msg lock-note">
+        <button class="btn-open" type="submit">開く</button>
+      </div>
+      <p id="lock-msg" class="lock-msg" role="status"></p>
+      <p id="lock-note" class="fine">パスワードを受け取った方だけが読めます。一度開くと、この端末では次から入力なしで開きます。</p>
+    </form>
+    <div class="cover-actions" data-locked hidden>
+      <button id="open-sound" class="btn-open" type="button">OPEN</button>
+      <button id="open-quiet" class="btn-quiet" type="button">音を出さずに読む</button>
+    </div>
+    <p class="fine" data-locked hidden>OPEN で音が出ます。読みながら切り替えられます。</p>
+  </div>
+</section>
+
+<main id="reader" hidden>
+  <header class="topbar">
+    <p class="book-name">GATE 30th</p>
+    <p class="folio" aria-live="polite"><span id="folio-now">1</span><span class="of">/ <span id="folio-total">–</span></span></p>
+    <div class="tools">
+      <button id="btn-toc" class="tool" type="button" aria-label="目次" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v6H4zM14 15h6v6h-6z"/></svg>
+      </button>
+      <button id="btn-sound" class="tool" type="button" aria-label="音" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l5 6M21 9l-5 6"/></svg>
+      </button>
+      <button id="btn-full" class="tool" type="button" aria-label="全画面">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="stage-area">
+    <div id="stage">
+      <div id="book"></div>
+    </div>
+  </div>
+
+  <footer class="bottombar">
+    <button id="btn-prev" class="turn" type="button" aria-label="前のページ">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span class="turn-label">前へ</span>
+    </button>
+    <label class="scrub" for="scrubber"><span class="sr">ページ移動</span>
+      <input id="scrubber" type="range" min="1" max="2" step="1" value="1">
+    </label>
+    <button id="btn-next" class="turn" type="button" aria-label="次のページ">
+      <span class="turn-label">次へ</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </footer>
+
+  <p id="toast" role="status" hidden></p>
+</main>
+
+<dialog id="toc" aria-labelledby="toc-title">
+  <div class="sheet-head">
+    <h2 id="toc-title">目次</h2>
+    <button class="tool" type="button" data-close aria-label="閉じる">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <ol id="toc-list" class="toc-list"></ol>
+</dialog>
+
+<!-- Full-size view of one original. Pinch or wheel to zoom, drag to look around. -->
+<dialog id="zoom" aria-label="原画を拡大">
+  <div id="zoom-pane"><img id="zoom-img" alt=""></div>
+  <div class="zoom-bar">
+    <p id="zoom-credit"></p>
+    <p class="zoom-hint">ピンチ・ホイールで拡大 / ダブルタップで切替</p>
+    <button class="tool" type="button" data-close aria-label="閉じる">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+</dialog>
+
+<div id="song-card" role="dialog" aria-modal="false" aria-labelledby="song-card-title" hidden>
+  <p id="song-card-title" class="song-card-title"></p>
+  <div id="song-card-links" class="song-links"></div>
+  <p class="song-card-note">各サービスの検索結果が開きます</p>
+</div>
+
+<!-- An offscreen page used to measure text while laying out the essays -->
+<div id="measure" aria-hidden="true"></div>
+
+<script src="vendor/page-flip.browser.js"></script>
+<script>window.GATE30_LOCK = {"salt": "DPxkERA3tyv4dYg498jvYA==", "iter": 600000, "manifest": "2b867570849410f16f1d.bin"};</script>
+<script src="lock.js"></script>
+</body>
+</html>

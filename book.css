@@ -1,0 +1,461 @@
+/* A reading room at night: the book is the only lit object, the room is the cover's
+   ice-blue pushed down to near black. Pages are paper; everything else is the room.
+   One look on purpose, so no light theme. */
+:root {
+  color-scheme: dark;
+  --night: #060a12;        /* room */
+  --night-2: #0d1524;      /* raised chrome */
+  --ice: #a8c4e8;          /* the cover photograph's sky */
+  --frost: #e6f0fb;        /* text on the room */
+  --frost-dim: #8fa3bd;
+  --line: rgba(168, 196, 232, .18);
+  --signal: #ff3b30;       /* the red "happy anniversary" on the cover */
+
+  --paper: #fdfdfb;        /* page */
+  --ink: #1d2430;          /* text on paper */
+  --ink-dim: #6b7584;
+  --rule: #e3e7ee;
+  --ice-ink: #3f6fae;      /* the ice-blue, dark enough to read on paper */
+
+  --f-display: "Michroma", "Eurostile", "Arial Black", sans-serif;
+  --f-mono: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+  --f-read: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+
+  --ease: cubic-bezier(.2, .7, .1, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 90% at 50% 15%, #13233b 0%, var(--night) 62%) var(--night);
+  color: var(--frost);
+  font: 15px/1.7 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ice); outline-offset: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+#frost { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+/* ---------- cover ---------- */
+/* An overlay above the reader rather than a block before it, so the book can be laid
+   out at its real size underneath while the cover is still showing. */
+#cover-screen {
+  position: fixed; inset: 0; z-index: 5;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 26rem);
+  align-items: center; justify-content: center;
+  gap: clamp(2rem, 6vw, 5.5rem);
+  padding-block: max(2rem, env(safe-area-inset-top, 0px)) max(2rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  transition: opacity .7s var(--ease), transform .9s var(--ease);
+}
+#cover-screen.leaving { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+.cover-art {
+  position: relative;
+  height: min(84vh, 54rem);
+  aspect-ratio: 1070 / 1500;
+  max-width: 100%;
+  perspective: 1400px;
+  animation: arrive 1.4s var(--ease) both;
+}
+.cover-art img {
+  display: block; width: 100%; height: 100%; object-fit: contain;
+  box-shadow: 0 40px 90px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.04);
+  transform: rotateY(-7deg) rotateX(2deg);
+  transform-origin: 0 50%;
+  transition: transform .8s var(--ease);
+}
+.cover-art:hover img { transform: rotateY(-2deg); }
+/* A sweep of light across the cover, like turning it under a lamp */
+.cover-glint {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  transform: rotateY(-7deg) rotateX(2deg); transform-origin: 0 50%;
+}
+.cover-glint::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; width: 40%; left: -60%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent);
+  animation: glint 7s 1.6s var(--ease) infinite;
+}
+@keyframes glint { 0% { left: -60%; } 30%, 100% { left: 130%; } }
+@keyframes arrive { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+.cover-copy { display: grid; gap: 1.1rem; animation: arrive 1.4s .25s var(--ease) both; }
+.eyebrow { margin: 0; font: 400 .78rem/1.4 var(--f-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--ice); }
+#cover-title { margin: 0; font: 400 clamp(1.9rem, 3.6vw, 3rem)/1.1 var(--f-display); letter-spacing: .04em; white-space: nowrap; }
+.span-years { margin: 0; display: flex; align-items: center; gap: .9rem; font: 400 1rem/1 var(--f-mono); letter-spacing: .3em; color: var(--frost-dim); }
+.span-years .dash { flex: 0 0 3.5rem; height: 1px; background: var(--signal); }
+.lede { margin: .3rem 0 0; color: var(--frost-dim); }
+.cover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; margin-top: .8rem; }
+.btn-open {
+  font: 400 1rem/1 var(--f-display); letter-spacing: .4em; text-indent: .4em;
+  padding: 1.05rem 2.6rem; border: 1px solid var(--ice); border-radius: 0;
+  background: linear-gradient(180deg, rgba(168,196,232,.16), rgba(168,196,232,.04));
+  cursor: pointer; transition: background .3s, box-shadow .3s, letter-spacing .4s var(--ease);
+}
+.btn-open:hover { background: rgba(168,196,232,.22); box-shadow: 0 0 32px -6px var(--ice); letter-spacing: .5em; }
+.btn-quiet {
+  background: none; border: 0; padding: .4rem 0; cursor: pointer; color: var(--frost-dim);
+  text-decoration: underline; text-underline-offset: .3em; text-decoration-color: var(--line);
+}
+.btn-quiet:hover { color: var(--frost); }
+.fine { margin: 0; font-size: .8rem; color: var(--frost-dim); }
+
+/* the password form of the protected build (tools/build-locked.py, lock.js) */
+.lock { display: grid; gap: .55rem; margin-top: .8rem; max-width: 24rem; }
+.lock label { font: 400 .72rem/1 var(--f-mono); letter-spacing: .3em; color: var(--frost-dim); }
+.lock-row { display: flex; gap: .6rem; }
+.lock input {
+  flex: 1; min-width: 0; font: 400 16px/1.2 var(--f-body); color: var(--frost);   /* 16px: iOS zooms in on anything smaller */
+  padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 0; background: rgba(6,10,18,.55);
+}
+.lock input:focus { outline: none; border-color: var(--ice); box-shadow: 0 0 24px -8px var(--ice); }
+.lock .btn-open { padding: .9rem 1.3rem; letter-spacing: .2em; text-indent: .2em; }
+.lock .btn-open:hover { letter-spacing: .25em; }
+.lock-msg { margin: 0; min-height: 1.4em; font-size: .85rem; color: #f2a7a7; }
+.lock-msg.wait { color: var(--frost-dim); }
+
+/* ---------- reader chrome ---------- */
+#reader { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; opacity: 0; transition: opacity .6s var(--ease); }
+#reader.shown { opacity: 1; }
+.topbar, .bottombar {
+  display: flex; align-items: center; gap: 1rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.topbar { padding-block: max(.6rem, env(safe-area-inset-top, 0px)) .6rem; justify-content: space-between; }
+.bottombar { padding-block: .5rem max(.8rem, env(safe-area-inset-bottom, 0px)); }
+.book-name { margin: 0; font: 400 .72rem/1 var(--f-display); letter-spacing: .3em; color: var(--frost-dim); flex: 1 1 0; white-space: nowrap; }
+.folio { margin: 0; font: 400 1rem/1 var(--f-mono); letter-spacing: .12em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.folio .of { color: var(--frost-dim); margin-left: .5em; }
+.tools { display: flex; gap: .25rem; flex: 1 1 0; justify-content: flex-end; }
+.tool, .turn {
+  width: 42px; height: 42px; display: grid; place-items: center;
+  border: 1px solid transparent; border-radius: 50%; background: none; cursor: pointer;
+  color: var(--frost-dim); transition: color .2s, border-color .2s, background .2s;
+}
+.tool:hover, .turn:hover { color: var(--frost); border-color: var(--line); background: rgba(168,196,232,.06); }
+.tool svg, .turn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+#btn-sound .mute { display: none; }
+#btn-sound[aria-pressed="false"] .wave { display: none; }
+#btn-sound[aria-pressed="false"] .mute { display: inline; }
+#btn-sound[aria-pressed="true"] { color: var(--ice); }
+.turn:disabled { opacity: .25; cursor: default; }
+/* the turn buttons say which way they go: in a right-to-left book "‹" is forward */
+.turn { width: auto; display: flex; align-items: center; gap: .15rem; padding: 0 .7rem 0 .45rem; border-radius: 999px; border-color: var(--line); color: var(--frost); }
+#btn-next.turn { padding: 0 .45rem 0 .7rem; }
+.turn-label { font-size: .82rem; letter-spacing: .08em; white-space: nowrap; }
+.scrub { flex: 1; display: flex; }
+#scrubber { width: 100%; accent-color: var(--ice); background: transparent; }
+
+#stage-area {
+  flex: 1; min-height: 0;
+  /* page-flip parks off-screen pages beside the book; keep them from widening the page */
+  overflow: hidden;
+  display: grid; place-items: center;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+#stage { position: relative; transition: transform .7s var(--ease); }
+#book { box-shadow: 0 50px 90px -40px rgba(0,0,0,.95); }
+
+/* page-flip's own rules (the npm bundle ships no stylesheet) */
+.stf__parent { position: relative; display: block; box-sizing: border-box; transform: translateZ(0); touch-action: pan-y; }
+.stf__wrapper { position: relative; width: 100%; box-sizing: border-box; }
+.stf__parent canvas { position: absolute; width: 100%; height: 100%; left: 0; top: 0; }
+.stf__block { position: absolute; width: 100%; height: 100%; box-sizing: border-box; perspective: 2000px; }
+.stf__item { display: none; position: absolute; transform-style: preserve-3d; }
+.stf__outerShadow, .stf__innerShadow, .stf__hardShadow, .stf__hardInnerShadow { position: absolute; left: 0; top: 0; }
+
+/* ---------- pages ----------
+   Every size inside a page is in cqw (1% of the page's width), so a page looks the
+   same at any size and text laid out once fits at every size. */
+.page {
+  container-type: size;
+  background: var(--paper); color: var(--ink);
+  overflow: hidden;
+  font-family: var(--f-body);
+}
+.page img { user-select: none; -webkit-user-drag: none; }
+/* the fold: a soft shade along the binding edge */
+.page.--left::after, .page.--right::after { content: ""; position: absolute; top: 0; bottom: 0; width: 7cqw; pointer-events: none; z-index: 2; }
+.page.--left::after { right: 0; background: linear-gradient(270deg, rgba(20,30,50,.13), transparent); }
+.page.--right::after { left: 0; background: linear-gradient(90deg, rgba(20,30,50,.13), transparent); }
+
+.folio-num {
+  position: absolute; bottom: 4.2cqw; z-index: 3;
+  font: 400 2.3cqw/1 var(--f-mono); letter-spacing: .1em; color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+.page.--left .folio-num { left: 6cqw; }
+.page.--right .folio-num, .page:not(.--left) .folio-num { right: 6cqw; }
+
+/* artwork: the original, as large as the page allows */
+/* The frame is a size container so the picture can be held to it in both directions.
+   max-height: 100% did not do that: inside a grid the row grew to fit the picture, so
+   anything taller than the frame ran down over the credit and off the page. */
+.art-frame { position: absolute; inset: 4.5cqw 4.5cqw 9cqw; display: grid; place-items: center; container-type: size; }
+.art-frame img { max-width: 100cqw; max-height: 100cqh; width: auto; height: auto; display: block; box-shadow: 0 .4cqw 1.6cqw rgba(20,30,50,.14); cursor: zoom-in; }
+.page.paper-art .art-frame { inset: 0; }                 /* pages that are themselves paper */
+.page.paper-art .art-frame img { box-shadow: none; }
+/* a page with a small block of the contributor's own under the picture (book-data.js `block`) */
+.page.has-block .art-frame { bottom: 30cqw; }
+.art-block {
+  position: absolute; left: 7cqw; right: 7cqw; bottom: 8.6cqw; z-index: 3;
+  padding-top: 2.6cqw; border-top: 1px solid rgba(29,36,48,.12);
+  font: 400 2.5cqw/1.65 var(--f-body); color: var(--ink-dim);
+}
+.art-block dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: .4cqw 3cqw; }
+.art-block dt { white-space: nowrap; }
+.art-block dd { margin: 0; }
+.art-block a { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: rgba(29,36,48,.3); text-underline-offset: .25em; }
+.art-block p { margin: 1.4cqw 0 0; }
+.credit {
+  /* line-height 1.2 shaved the descenders (g, y, _) off at some page sizes, since
+     overflow is hidden for the ellipsis; the taller line is offset in `bottom` */
+  position: absolute; left: 6cqw; right: 6cqw; bottom: 3.15cqw; z-index: 3;
+  margin: 0; font: 400 2.3cqw/1.6 var(--f-body); color: var(--ink-dim); text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.credit b { font-weight: 700; color: var(--ink); margin-right: .6em; }
+
+/* a landscape original across two facing pages: each page shows its half of one
+   canvas twice the page's width */
+.spread-canvas { position: absolute; top: 0; bottom: 0; width: 200cqw; }
+.page.half-l .spread-canvas { left: 0; }
+.page.half-r .spread-canvas { left: -100cqw; }
+.spread-canvas .art-frame { inset: 4.5cqw 4.5cqw 9cqw; }
+.spread-canvas .credit { left: 106cqw; right: 6cqw; }
+.page.half-l .credit { display: none; }
+/* on one page at a time, a landscape piece lies across the page */
+.page.landscape .art-frame { inset: 4.5cqw 4.5cqw 9cqw; }
+.zoom-hint-chip {
+  position: absolute; z-index: 3; right: 5cqw; top: 4cqw;
+  font: 400 2.2cqw/1 var(--f-body); color: var(--ink-dim);
+  padding: 1cqw 1.8cqw; border: 1px solid var(--rule); border-radius: 99px; background: var(--paper);
+  pointer-events: none;
+}
+
+/* title, section openers, colophon */
+/* No padding on .page itself: cqw is measured against the page's content box, so
+   padding there would shrink every size on the page. Insets go on .inner instead. */
+.page > .inner { position: absolute; }
+.page.title > .inner { inset: 10cqw; display: grid; align-content: center; justify-items: center; text-align: center; gap: 3cqw; }
+.title .t-eyebrow { margin: 0; font: 400 2.6cqw/1.3 var(--f-mono); letter-spacing: .35em; text-transform: uppercase; color: var(--ice-ink); }
+.title .t-main { margin: 0; font: 400 8cqw/1.1 var(--f-display); letter-spacing: .04em; }
+.title .t-years { margin: 0; display: flex; align-items: center; gap: 3cqw; font: 400 3cqw/1 var(--f-mono); letter-spacing: .3em; color: var(--ink-dim); }
+.title .t-years i { width: 10cqw; height: 1px; background: var(--signal); }
+.title .t-note { margin: 4cqw 0 0; font: 400 3cqw/1.9 var(--f-body); color: var(--ink-dim); text-wrap: balance; }
+
+.page.opener { background: linear-gradient(180deg, var(--paper) 55%, #eef3fa); }
+.page.opener > .inner { inset: 12cqw 9cqw 22cqw; display: grid; align-content: end; }
+.opener .o-name { margin: 0; font: 700 6.5cqw/1.25 var(--f-body); text-wrap: balance; overflow-wrap: anywhere; }
+.opener .o-handle { margin: 1.5cqw 0 0; font: 400 3cqw/1 var(--f-mono); color: var(--ice-ink); letter-spacing: .06em; }
+.opener .o-rule { width: 12cqw; height: 1px; background: var(--signal); margin-bottom: 5cqw; }
+.page.blank { background: var(--paper); }
+.page.blank::before { content: "✧"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 4cqw; color: var(--rule); }
+
+.page.colophon > .inner { inset: 12cqw 10cqw 18cqw; display: grid; align-content: end; gap: 4cqw; }
+.colophon h2 { margin: 0 0 2cqw; font: 400 2.6cqw/1 var(--f-mono); letter-spacing: .35em; color: var(--ice-ink); }
+.colophon .c-title { margin: 0; font: 400 4.4cqw/1.3 var(--f-display); letter-spacing: .03em; }
+.colophon dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 1.6cqw 4cqw; font-size: 3cqw; }
+.colophon dt { color: var(--ink-dim); }
+.colophon dd { margin: 0; }
+.colophon .c-list { margin: 0; font-size: 2.5cqw; line-height: 1.9; color: var(--ink-dim); }
+
+/* ---------- flowing text ---------- */
+.flow { position: absolute; inset: 10cqw 9cqw 11cqw; overflow: hidden; }
+.flow > * { margin: 0; }
+.essay { font-family: var(--f-read); font-size: 3.25cqw; line-height: 1.95; letter-spacing: .02em; }
+.essay p { text-indent: 1em; }
+.essay p.cont { text-indent: 0; }
+.essay p.gap { margin-top: 1.95em; }
+/* a section break that lands at the top of a page needs no space above it */
+.essay { display: flow-root; }
+.essay > p.gap:first-child { margin-top: 0; }
+.essay .sign { text-align: right; margin-top: 1em; }
+.essay .e-head { margin-bottom: 6cqw; font-family: var(--f-body); }
+.e-head .e-name { display: block; font: 700 4.6cqw/1.3 var(--f-body); }
+.e-head .e-handle { display: block; margin-top: .8cqw; font: 400 2.5cqw/1 var(--f-mono); color: var(--ice-ink); letter-spacing: .06em; }
+.e-head::after { content: ""; display: block; width: 10cqw; height: 1px; margin-top: 4cqw; background: var(--signal); }
+.running { position: absolute; left: 9cqw; top: 5cqw; font: 400 2.2cqw/1 var(--f-body); color: var(--ink-dim); }
+
+/* あゆき: "if Twitter had existed then" — each concert is a post */
+.posts { font-size: 3cqw; line-height: 1.75; display: flex; flex-direction: column; gap: 3.5cqw; }
+.post { border: 1px solid var(--rule); border-radius: 2.4cqw; padding: 3.4cqw 3.6cqw; background: #fff; display: flex; flex-direction: column; gap: 2.2cqw; }
+.post.cont { border-top-style: dashed; }
+.post-head { display: flex; align-items: center; gap: 2.4cqw; }
+.post-head img { width: 8.5cqw; height: 8.5cqw; border-radius: 50%; display: block; }
+.post-head b { display: block; font-size: 2.75cqw; line-height: 1.2; }
+.post-head span { display: block; font: 400 2.2cqw/1.2 var(--f-mono); color: var(--ink-dim); }
+.post p { margin: 0; overflow-wrap: anywhere; }
+.post .intro-title { font-weight: 700; color: #c2185b; }
+.post .intro { color: #c2185b; }
+.setlist { border: 1px solid var(--rule); border-radius: 1.8cqw; padding: 2.6cqw 3cqw; background: #f6f8fb; font-size: 2.9cqw; line-height: 1.6; }
+.setlist h3 { margin: 0 0 1.4cqw; font-size: 2.9cqw; line-height: 1.45; font-weight: 700; }
+.setlist .sl-note { margin: -.6cqw 0 1.2cqw; font-size: 2.55cqw; color: var(--ink-dim); }
+.setlist ol { list-style: none; margin: 0; padding: 0; }
+.setlist li { display: grid; grid-template-columns: 5.4cqw minmax(0, 1fr); gap: .8cqw; overflow-wrap: anywhere; }
+.setlist li .n { font: 400 2.55cqw/1.6 var(--f-mono); color: var(--ink-dim); text-align: right; }
+.setlist li.label { display: block; margin-top: .8cqw; font-weight: 700; color: var(--ice-ink); font-size: 2.65cqw; }
+.setlist li.note { display: block; font-size: 2.55cqw; color: var(--ink-dim); }
+.post p.notes { font-size: 2.75cqw; color: var(--ink-dim); }
+.post .aside { border-left: .6cqw solid #d5e2f3; padding-left: 2.6cqw; font-size: 2.75cqw; }
+.post .aside b { color: var(--ice-ink); }
+.post .dates { margin: 0; padding: 0; list-style: none; font-size: 2.75cqw; display: grid; gap: 1cqw; }
+.post .dates b { font-weight: 700; font-family: var(--f-mono); }
+.post .dates span { display: block; padding-left: 2.6cqw; color: var(--ink-dim); }
+
+/* video page: Hindy's post on X, played on the page */
+.page.video { background: linear-gradient(160deg, #0f1b2e, #060a12); color: var(--frost); box-shadow: inset 0 0 0 1px rgba(168,196,232,.14); }
+.page.video > .inner { inset: 9cqw 7cqw 10cqw; display: flex; flex-direction: column; justify-content: center; gap: 4.5cqw; }
+.v-head { margin: 0; font: 700 4.4cqw/1.3 var(--f-body); }
+.v-head span { display: block; margin-top: 1.2cqw; font: 400 2.5cqw/1.4 var(--f-mono); color: var(--ice); letter-spacing: .06em; }
+.v-frame {
+  position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%;
+  padding: 0; border: 0; border-radius: 1.2cqw; overflow: hidden; background: #000; cursor: pointer;
+  box-shadow: 0 2.4cqw 7cqw rgba(0,0,0,.55);
+}
+.v-frame video { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; background: #000; }
+.v-frame .play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 15cqw; height: 15cqw; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
+  border: 1px solid rgba(168,196,232,.6); background: rgba(6,10,18,.5);
+  animation: halo 3s ease-out infinite; transition: opacity .3s;
+}
+.v-frame .play svg { width: 6cqw; height: 6cqw; fill: var(--frost); margin-left: 1cqw; }
+.v-frame.playing .play { opacity: 0; animation: none; }
+.v-caption { margin: 0; font: 400 3.3cqw/1.7 var(--f-body); }
+.v-actions { display: flex; flex-wrap: wrap; gap: 2.4cqw; }
+.v-actions button, .v-actions a {
+  font: 400 2.5cqw/1 var(--f-mono); letter-spacing: .04em; color: var(--frost); text-decoration: none;
+  padding: 1.8cqw 3cqw; border: 1px solid var(--line); border-radius: 99px; background: none; cursor: pointer;
+}
+.v-actions button:hover, .v-actions a:hover { border-color: var(--ice); background: rgba(168,196,232,.1); }
+@keyframes halo { 0% { box-shadow: 0 0 0 0 rgba(168,196,232,.35); } 100% { box-shadow: 0 0 0 6cqw rgba(168,196,232,0); } }
+
+/* ---------- hidden song links ---------- */
+.song {
+  font: inherit; color: inherit; letter-spacing: inherit; text-align: inherit;
+  background: none; border: 0; padding: 0; margin: 0; cursor: pointer; display: inline;
+  text-decoration: underline dotted rgba(63, 111, 174, .45); text-underline-offset: .25em; text-decoration-thickness: 1px;
+  transition: color .2s, text-shadow .3s, text-decoration-color .2s;
+}
+.song:hover, .song:focus-visible, .song[aria-expanded="true"] {
+  color: var(--ice-ink); text-decoration-color: var(--ice-ink); text-shadow: 0 0 .6em rgba(120, 170, 235, .55);
+}
+#song-card {
+  position: fixed; z-index: 30; width: min(19rem, calc(100vw - 32px)); padding: .9rem 1rem .8rem;
+  background: rgba(13, 21, 36, .95); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 24px 60px -20px rgba(0,0,0,.9);
+}
+.song-card-title { margin: 0 0 .6rem; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.song-card-title small { font-weight: 400; color: var(--frost-dim); margin-left: .4em; font-size: .8em; }
+.song-links { display: flex; gap: .5rem; flex-wrap: wrap; }
+.song-links a { font: 400 .8rem/1 var(--f-mono); letter-spacing: .06em; text-decoration: none; color: var(--frost); padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 999px; }
+.song-links a:hover { border-color: var(--ice); background: rgba(168,196,232,.1); }
+.song-card-note { margin: .6rem 0 0; font-size: .72rem; color: var(--frost-dim); }
+
+#toast {
+  position: fixed; left: 50%; bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  transform: translateX(-50%); margin: 0; padding: .6rem 1rem; max-width: calc(100vw - 32px);
+  background: rgba(13, 21, 36, .92); border: 1px solid var(--line); border-radius: 14px;
+  font-size: .82rem; color: var(--frost); text-align: center; animation: arrive .5s var(--ease) both;
+  pointer-events: none;     /* it sits over the foot of the page; taps go through to it */
+}
+
+/* ---------- contents ---------- */
+#toc {
+  width: min(46rem, calc(100vw - 32px)); max-height: min(88vh, 52rem);
+  padding: 0; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--night-2); color: var(--frost); overflow: auto;
+}
+#toc::backdrop { background: rgba(3, 6, 12, .72); backdrop-filter: blur(4px); }
+.sheet-head {
+  position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center;
+  padding: .9rem 1rem .9rem 1.25rem; background: var(--night-2); border-bottom: 1px solid var(--line);
+}
+.sheet-head h2 { margin: 0; font: 400 .85rem/1.3 var(--f-display); letter-spacing: .2em; }
+.toc-list { list-style: none; margin: 0; padding: 1.1rem 1.25rem 1.4rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1.1rem .9rem; }
+.toc-list button { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; display: grid; grid-template-columns: 3.6rem minmax(0, 1fr); gap: .65rem; align-items: start; }
+.toc-thumb { width: 3.6rem; aspect-ratio: 1 / 1.4142; background: var(--paper); display: grid; place-items: center; overflow: hidden; box-shadow: 0 6px 16px -8px rgba(0,0,0,.8); transition: transform .3s var(--ease); }
+.toc-thumb img { max-width: 92%; max-height: 92%; display: block; }
+.toc-thumb.txt { font: 700 1.2rem/1 var(--f-read); color: var(--ink-dim); }
+.toc-list button:hover .toc-thumb { transform: translateY(-3px); }
+.toc-page { display: block; font: 400 .72rem/1 var(--f-mono); color: var(--ice); letter-spacing: .1em; margin: .15rem 0 .35rem; font-variant-numeric: tabular-nums; }
+.toc-name { display: block; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.toc-sub { display: block; font-size: .76rem; color: var(--frost-dim); line-height: 1.4; overflow-wrap: anywhere; }
+.toc-list button[aria-current="true"] .toc-name { color: var(--ice); }
+
+/* ---------- full-size view ---------- */
+#zoom {
+  width: 100vw; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+  background: #04070d; color: var(--frost);
+}
+#zoom[open] { display: flex; flex-direction: column; }
+#zoom::backdrop { background: #04070d; }
+#zoom-pane { flex: 1; min-height: 0; position: relative; overflow: hidden; touch-action: none; cursor: grab; }
+#zoom-pane.dragging { cursor: grabbing; }
+#zoom-img { position: absolute; left: 0; top: 0; transform-origin: 0 0; max-width: none; user-select: none; -webkit-user-drag: none; }
+.zoom-bar {
+  display: flex; align-items: center; gap: 1rem;
+  padding-block: .5rem max(.6rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-top: 1px solid var(--line);
+}
+#zoom-credit { margin: 0; flex: 1; min-width: 0; font-size: .85rem; overflow-wrap: anywhere; }
+#zoom-credit span { color: var(--frost-dim); font-family: var(--f-mono); margin-left: .5em; }
+.zoom-hint { margin: 0; font-size: .75rem; color: var(--frost-dim); }
+
+#measure { position: fixed; left: -9999px; top: 0; visibility: hidden; pointer-events: none; }
+
+[data-dir="rtl"] .cover-art img, [data-dir="rtl"] .cover-glint { transform: rotateY(7deg) rotateX(2deg); transform-origin: 100% 50%; }
+[data-dir="rtl"] .cover-art:hover img { transform: rotateY(2deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-art, .cover-copy, #toast { animation: none; }
+  .cover-glint { display: none; }
+  .v-frame .play { animation: none; }
+  #stage { transition: none; }
+}
+
+/* Phone and narrow windows. Kept last so it wins over the rules above at equal
+   specificity. */
+@media (max-width: 760px) {
+  /* One screen, no scrolling: the cover takes whatever height the words and the OPEN
+     button leave over, so OPEN is never pushed below the fold on a short phone. */
+  #cover-screen {
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto;
+    justify-items: center; align-content: stretch; text-align: center;
+    gap: clamp(.8rem, 2.5svh, 1.6rem);
+    padding-block: max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .cover-art { height: 100%; max-height: 30rem; min-height: 0; }
+  .cover-copy { gap: clamp(.45rem, 1.4svh, 1.1rem); }
+  #cover-title { font-size: clamp(1.7rem, 8.5vw, 2.4rem); }
+  .lede { font-size: .9rem; margin: 0; }
+  .cover-actions { margin-top: .2rem; gap: .35rem; }
+  .btn-open { padding: .9rem 2.4rem; }
+  .cover-art img, .cover-glint, [data-dir] .cover-art img, [data-dir] .cover-glint { transform: none; }
+  .cover-copy { justify-items: center; }
+  .span-years { justify-content: center; }
+  .cover-actions { justify-content: center; flex-direction: column; }
+  .book-name { display: none; }
+  .tools { flex: 0 0 auto; }
+  .folio { flex: 1 1 0; }
+  .zoom-hint { display: none; }
+}
+/* very short phones: drop the small print under the buttons */
+@media (max-width: 760px) and (max-height: 700px) {
+  .cover-copy .fine { display: none; }
+  .eyebrow { font-size: .7rem; }
+}
