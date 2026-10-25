@@ -215,6 +215,18 @@ button { font: inherit; color: inherit; }
    the scans are, so the paper has no visible edge. Covers are paper-art but not signed. */
 .page.paper-art.signed { background: #fff; }
 .page.paper-art.signed .art-frame { inset: 0 0 7cqw; }
+/* a link printed in a picture (book-data.js `links`): a tinted box over the words, with a
+   finger-sized target around them, since a line of vertical text is only a few px wide */
+.art-box { position: relative; display: block; line-height: 0; }
+.art-link {
+  position: absolute; display: block; border-radius: .5cqw;
+  background: rgba(77, 128, 200, .12); outline: 1px dotted rgba(77, 128, 200, .6); outline-offset: .5cqw;
+}
+.art-link::before { content: ''; position: absolute; inset: -2cqw -3cqw; }
+.art-link:hover, .art-link:focus-visible { background: rgba(77, 128, 200, .24); }
+/* @handles link to X: underlined only faintly, so a credit still reads as a credit */
+.x-handle { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: .2em; }
+.x-handle:hover { text-decoration-color: currentColor; }
 /* a page with a small block of the contributor's own under the picture (book-data.js `block`) */
 .page.has-block .art-frame { bottom: 30cqw; }
 .art-block {
