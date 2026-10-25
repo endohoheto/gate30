@@ -210,6 +210,11 @@ button { font: inherit; color: inherit; }
 .art-frame img { max-width: 100cqw; max-height: 100cqh; width: auto; height: auto; display: block; box-shadow: 0 .4cqw 1.6cqw rgba(20,30,50,.14); cursor: zoom-in; }
 .page.paper-art .art-frame { inset: 0; }                 /* pages that are themselves paper */
 .page.paper-art .art-frame img { box-shadow: none; }
+/* a contributor's own page of paper (book-data.js `paper`): it stops short of the foot so
+   the credit gets a strip below the last line instead of sitting on the text. White, as
+   the scans are, so the paper has no visible edge. Covers are paper-art but not signed. */
+.page.paper-art.signed { background: #fff; }
+.page.paper-art.signed .art-frame { inset: 0 0 7cqw; }
 /* a page with a small block of the contributor's own under the picture (book-data.js `block`) */
 .page.has-block .art-frame { bottom: 30cqw; }
 .art-block {
@@ -369,11 +374,15 @@ button { font: inherit; color: inherit; }
 .song-card-note { margin: .6rem 0 0; font-size: .72rem; color: var(--frost-dim); }
 
 #toast {
-  position: fixed; left: 50%; bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); z-index: 20;
-  transform: translateX(-50%); margin: 0; padding: .6rem 1rem; max-width: calc(100vw - 32px);
+  /* over the top bar, not the book: at the foot it covered the credits for its first six
+     seconds, and the first spread is where every reader sees it */
+  position: fixed; left: 0; right: 0; top: calc(.45rem + env(safe-area-inset-top, 0px)); z-index: 20;
+  /* centred by margins: the arrive animation sets transform, so translateX(-50%) was
+     dropped once it ran and the bar sat right of centre */
+  width: max-content; margin: 0 auto; padding: .6rem 1rem; max-width: calc(100vw - 32px);
   background: rgba(13, 21, 36, .92); border: 1px solid var(--line); border-radius: 14px;
   font-size: .82rem; color: var(--frost); text-align: center; animation: arrive .5s var(--ease) both;
-  pointer-events: none;     /* it sits over the foot of the page; taps go through to it */
+  pointer-events: none;     /* taps go through to the bar under it */
 }
 
 /* ---------- contents ---------- */
